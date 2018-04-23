@@ -49,6 +49,29 @@ bool IsApiProp(UProperty* Prop)
 	return false;
 }
 
+
+bool IsDelegateProperty(UProperty* Property)
+{
+	if (Property->IsA(UDelegateProperty::StaticClass()))
+	{
+		return true;
+	}
+	else if (UArrayProperty* ArrProperty = Cast<UArrayProperty>(Property))
+	{
+		return IsDelegateProperty(ArrProperty->Inner);
+	}
+	else if (USetProperty* SetProperty = Cast<USetProperty>(Property))
+	{
+		return IsDelegateProperty(SetProperty->ElementProp);
+	}
+	else if (UMapProperty* MapProperty = Cast<UMapProperty>(Property))
+	{
+		return IsDelegateProperty(MapProperty->KeyProp) || IsDelegateProperty(MapProperty->ValueProp);
+	}
+	else
+		return false;
+}
+
 FString GetUClassGlue(UClass* Class)
 {
 	FString CPPName = FString::Printf(TEXT("%s%s"), Class->GetPrefixCPP(), *Class->GetName());
@@ -244,6 +267,15 @@ FString FLuaScriptCodeGenerator::InitializeParam(UProperty* Param, int32 ParamIn
 			FString typeName = GetPropertyTypeCPP(Param, CPPF_ArgumentOrReturnValue);
 			Initializer = FString::Printf(TEXT("(%s)(%slua_tointeger"), *typeName, *CircularModulesLuaPrefix);
 		}
+		else if (Param->IsA(UDelegateProperty::StaticClass()))
+		{
+			FString typeName = GetPropertyTypeCPP(Param, CPPF_ArgumentOrReturnValue);
+			UClass* Class = (UClass*)Param->GetOuter()->GetOuter();
+			UFunction* Function = (UFunction*)Param->GetOuter();
+			FString FuncSigStr = FString::Printf(L"FindField<UDelegateProperty>(%s::StaticClass()->FindFunctionByName(\"%s\"), \"%s\")->SignatureFunction))", *GetClassNameCPP(Class), *Function->GetName(), *Param->GetName());
+			return FString::Printf(TEXT("*(%s*)(tosingledelegate(L, 2, %s"), *typeName, *FuncSigStr);
+			Initializer = FString::Printf(TEXT("*(%s*)(tosingledelegate"), *typeName);
+		}
 		else if (Param->IsA(UInterfaceProperty::StaticClass()))
 		{
 			FString typeName = GetPropertyTypeCPP(Param, CPPF_ArgumentOrReturnValue);
@@ -378,6 +410,10 @@ FString FLuaScriptCodeGenerator::Push(const FString& ClassNameCPP, UFunction* Fu
 		Initializer += FString::Printf(TEXT("\tdelegateproxy->Init(%s, FunSig);\r\n"), *name);
 		Initializer += FString::Printf(TEXT("\tpushuobject(L, (void*)delegateproxy, true);"));
 		return Initializer;
+	}
+	else if (auto DelegateProperty = Cast<UDelegateProperty>(ReturnValue))
+	{
+		return "";//todo
 	}
 	else if (auto p = Cast<UMapProperty>(ReturnValue))
 	{
@@ -1089,6 +1125,10 @@ bool FLuaScriptCodeGenerator::IsPropertyTypeSupported(UProperty* Property)
 			}
 		}
 	}
+	else if (auto p = Cast<UDelegateProperty>(Property))
+	{
+// 		todo
+	}
 	else if (auto p = Cast<UClassProperty>(Property))
 	{
 		FString HeaderPath = FModulePath::Get().GetClassHeaderPath(p->MetaClass);
@@ -1185,6 +1225,10 @@ bool FLuaScriptCodeGenerator::CanExportProperty(const FString& ClassNameCPP, UCl
 			}
 
 		}
+		if (auto p = Cast<UDelegateProperty>(Property))
+		{
+// todo
+		}
 		return IsPropertyTypeSupported(Property);
 	}
 	else
@@ -1232,6 +1276,10 @@ FString FLuaScriptCodeGenerator::GetPropertyType(UProperty* Property) const
 	else if (Property->IsA(UMulticastDelegateProperty::StaticClass()))
 	{
 		return FString("UMulticastDelegateProperty");
+	}
+	else if (Property->IsA(UDelegateProperty::StaticClass()))
+	{
+		return FString("UDelegateProperty");
 	}
 	else if (Property->IsA(UWeakObjectProperty::StaticClass()))
 	{
@@ -1411,7 +1459,10 @@ bool FLuaScriptCodeGenerator::CanCopyProperty(UProperty* Property)
 	{
 		return CanCopyProperty(p->ElementProp);
 	}
-	return true;
+	else if (IsDelegateProperty(Property))
+		return false;
+	else
+		return true;
 }
 
 FString FLuaScriptCodeGenerator::GetterCode(FString ClassNameCPP, FString classname, FString FuncName, UProperty* Property, UClass* Class, UClass* PropertySuper)
@@ -1425,8 +1476,9 @@ FString FLuaScriptCodeGenerator::GetterCode(FString ClassNameCPP, FString classn
 		if (Property->PropertyFlags & CPF_EditorOnly)
 			FunctionBody += TEXT("#if WITH_EDITORONLY_DATA\r\n");
 		FunctionBody += FString::Printf(TEXT("\t%s\r\n"), *GenerateObjectDeclarationFromContext(ClassNameCPP));
-		if (!PrivatePropertyStruct.Contains(ClassNameCPP) && 
-			(Property->PropertyFlags & CPF_NativeAccessSpecifierPublic || Property->IsA(UArrayProperty::StaticClass()))
+		if (!PrivatePropertyStruct.Contains(ClassNameCPP) 
+			&& (Property->PropertyFlags & CPF_NativeAccessSpecifierPublic || Property->IsA(UArrayProperty::StaticClass()))
+			&& !IsDelegateProperty(Property)
 			)
 		{
 			if (Property->IsA(UArrayProperty::StaticClass()))
@@ -1440,6 +1492,10 @@ FString FLuaScriptCodeGenerator::GetterCode(FString ClassNameCPP, FString classn
 			{
 				FunctionBody += FString::Printf(TEXT("\tauto& result = Obj->%s;\r\n"), *Property->GetName());
 			}
+// 			else if (auto DelegateProperty = Cast<UDelegateProperty>(Property))
+// 			{
+// 				FunctionBody += FString::Printf(TEXT("\tauto& result = Obj->%s;\r\n"), *Property->GetName());
+// 			}
 			else
 			{
 				FunctionBody += FString::Printf(TEXT("\tconst auto& result = Obj->%s;\r\n"), *Property->GetName());
@@ -1507,6 +1563,10 @@ FString FLuaScriptCodeGenerator::SetterBody(UProperty* Property)
 		Initializer += TEXT("(uint64)(" + CircularModulesLuaPrefix + "lua_tonumber");
 	}
 	else if (Property->IsA(UMulticastDelegateProperty::StaticClass()))
+	{
+		return "";
+	}
+	else if (Property->IsA(UDelegateProperty::StaticClass()))
 	{
 		return "";
 	}
@@ -1603,6 +1663,13 @@ FString FLuaScriptCodeGenerator::SetterBody(UProperty* Property)
 		FString typeName = GetPropertyTypeCPP(Property, CPPF_ArgumentOrReturnValue);
 		Initializer += FString::Printf(TEXT("(%s)(%slua_tointeger"), *typeName, *CircularModulesLuaPrefix);
 	}
+	else if (Property->IsA(UDelegateProperty::StaticClass()))
+	{
+		FString typeName = GetPropertyTypeCPP(Property, CPPF_ArgumentOrReturnValue);
+		UClass* Class = (UClass*)Property->GetOuter()->GetOuter();
+		FString FuncSigStr = FString::Printf(L"FindField<UDelegateProperty>(%s::StaticClass()->FindFunctionByName(\"%s\"), \"%s\")->SignatureFunction", *GetClassNameCPP(Class), *Property->GetName());
+		return FString::Printf(TEXT("*(%s*)(tosingledelegate(L, 2, %s"), *typeName, *FuncSigStr);
+	}
 	else if (auto p = Cast<UMapProperty>(Property))
 	{
 		return FString::Printf(TEXT("\tUTableUtil::read(Obj->%s, L, 2)"), *Property->GetName());
@@ -1639,6 +1706,7 @@ FString FLuaScriptCodeGenerator::SetterCode(FString ClassNameCPP, FString classn
 		{
 			GeneratedGlue += FString::Printf(TEXT("\t%s\r\n"), *GenerateObjectDeclarationFromContext(ClassNameCPP));
 			if (!PrivatePropertyStruct.Contains(ClassNameCPP) &&
+				!IsDelegateProperty(Property)&&
 				Property->PropertyFlags & CPF_NativeAccessSpecifierPublic)
 			{
 				FString Body = SetterBody(Property);

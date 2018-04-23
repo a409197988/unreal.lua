@@ -16,6 +16,7 @@
 #include "GameDelegates.h"
 #include "Platform.h"
 #include "NativeLuaFunc.h"
+#include "LuaDelegateSingle.h"
 
 DEFINE_LOG_CATEGORY(LuaLog);
 #define SetTableFunc(inL, index, FuncName, Func) lua_pushstring(inL, FuncName);\
@@ -369,6 +370,21 @@ void* tostruct(lua_State* L, int i)
 #endif // LuaDebug
 	auto u = static_cast<void**>(lua_touserdata(L, i));
 	return *u;
+}
+
+void* tosingledelegate(lua_State* L, int i, UFunction* FuncSig)
+{
+#ifdef LuaDebug
+	if (lua_isnil(L, i))
+	{
+		ensureAlwaysMsgf(0, L"can't be nil");
+		return nullptr;
+	}
+#endif // LuaDebug
+	auto u = static_cast<void**>(lua_touserdata(L, i));
+	ULuaDelegateSingle* UDelegate = (ULuaDelegateSingle*)(*u);
+	UDelegate->SetFuncSig(FuncSig);
+	return UDelegate->GetCppDelegate();
 }
 
 void PrintLuaStack(lua_State*L /*= nullptr*/)
@@ -1087,6 +1103,13 @@ void UTableUtil::pushproperty_type(lua_State*inL, UInterfaceProperty* p, const v
 	pushuobject(inL, (void*)result->GetObject());
 }
 
+void UTableUtil::pushproperty_type(lua_State*inL, UDelegateProperty* p, const void*ptr)
+{
+	FScriptDelegate* DelegatePtr = (FScriptDelegate*)p->GetPropertyValuePtr_InContainer(ptr);
+	ULuaDelegateSingle* NewOne = ULuaDelegateSingle::CreateInCppRef(DelegatePtr, p->SignatureFunction);
+	push(inL, NewOne);
+}
+
 void UTableUtil::pushproperty_valueptr(lua_State*inL, UProperty* property, const void* ptr)
 {
 	if (property == nullptr)
@@ -1160,6 +1183,10 @@ void UTableUtil::pushproperty_valueptr(lua_State*inL, UProperty* property, const
 		pushproperty_type_valueptr(inL, p, ptr);
 	}
 	else if (UInterfaceProperty* p = Cast<UInterfaceProperty>(property))
+	{
+		pushproperty_type_valueptr(inL, p, ptr);
+	}
+	else if (UDelegateProperty* p = Cast<UDelegateProperty>(property))
 	{
 		pushproperty_type_valueptr(inL, p, ptr);
 	}
@@ -1275,6 +1302,13 @@ void UTableUtil::pushproperty_type_valueptr(lua_State*inL, UInterfaceProperty* p
 {
 	FScriptInterface* result = (FScriptInterface*)p->GetPropertyValuePtr(ptr);
 	pushuobject(inL, (void*)result->GetObject());
+}
+// only for bp call lua
+void UTableUtil::pushproperty_type_valueptr(lua_State*inL, UDelegateProperty* p, const void*ptr)
+{
+	FScriptDelegate* DelegatePtr = (FScriptDelegate*)p->GetPropertyValuePtr(ptr);
+	ULuaDelegateSingle* NewOne = ULuaDelegateSingle::CreateInCppCopy(DelegatePtr, p->SignatureFunction);
+	push(inL, NewOne);
 }
 
 void UTableUtil::MayAddNewStructType(UUserDefinedStruct* BpStruct)
@@ -1735,6 +1769,11 @@ void UTableUtil::popproperty_type(lua_State*inL, int index, UInterfaceProperty* 
 	FScriptInterface* result = (FScriptInterface*)p->GetPropertyValuePtr_InContainer(ptr);
 	UObject* value = (UObject*)touobject(inL, index);
 	result->SetObject(value);
+}
+
+void UTableUtil::popproperty_type(lua_State*inL, int index, UDelegateProperty* p, void*ptr)
+{
+// todo
 }
 
 void pushuobject(lua_State *inL, void* p, bool bgcrecord)

@@ -60,6 +60,7 @@ LUAPLUGINRUNTIME_API void pushstruct_nogc_firstmem(lua_State *inL, const char* s
 LUAPLUGINRUNTIME_API void pushstruct_stack(lua_State *inL, const char* structname, void* p);
 LUAPLUGINRUNTIME_API void* touobject(lua_State* L, int i);
 LUAPLUGINRUNTIME_API void* tostruct(lua_State* L, int i);
+LUAPLUGINRUNTIME_API void* tosingledelegate(lua_State* L, int i, UFunction* FuncSig);
 LUAPLUGINRUNTIME_API int ErrHandleFunc(lua_State*L);
 LUAPLUGINRUNTIME_API void PrintLuaStack(lua_State*L = nullptr);
 
@@ -412,6 +413,7 @@ public:
 	static void pushproperty_type(lua_State*inL, UStructProperty* p, const void*ptr);
 	static void pushproperty_type_firstmem(lua_State*inL, UStructProperty* p, const void*ptr);
 	static void pushproperty_type(lua_State*inL, UMulticastDelegateProperty* p, const void*ptr);
+	static void pushproperty_type(lua_State*inL, UDelegateProperty* p, const void*ptr);
 	static void pushproperty_type(lua_State*inL, UWeakObjectProperty* p, const void*ptr);
 	static void pushproperty_type(lua_State*inL, UArrayProperty* property, const void* ptr);
 	static void pushproperty_type(lua_State*inL, UMapProperty* p, const void*ptr);
@@ -433,6 +435,7 @@ public:
 	static void pushproperty_type_valueptr(lua_State*inL, UEnumProperty* p, const void*ptr);
 	static void pushproperty_type_valueptr(lua_State*inL, UStructProperty* p, const void*ptr);
 	static void pushproperty_type_valueptr(lua_State*inL, UMulticastDelegateProperty* p, const void*ptr);
+	static void pushproperty_type_valueptr(lua_State*inL, UDelegateProperty* p, const void*ptr);
 	static void pushproperty_type_valueptr(lua_State*inL, UWeakObjectProperty* p, const void*ptr);
 	static void pushproperty_type_valueptr(lua_State*inL, UArrayProperty* property, const void* ptr);
 	static void pushproperty_type_valueptr(lua_State*inL, UMapProperty* p, const void*ptr);
@@ -909,6 +912,8 @@ public:
 	static void popproperty_type(lua_State*inL, int index, USetProperty* p, void*ptr);
 	static void popproperty_type(lua_State*inL, int index, UInterfaceProperty* p, void*ptr);
 	static void popproperty_type(lua_State*inL, int index, UMulticastDelegateProperty* p, void*ptr);
+	static void popproperty_type(lua_State*inL, int index, UDelegateProperty* p, void*ptr);
+	
 
 	template<class returnType, class... T>
 	static returnType callr(const FString& funcname, const T&... args)
