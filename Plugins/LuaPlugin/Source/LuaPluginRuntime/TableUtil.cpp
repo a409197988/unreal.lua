@@ -863,6 +863,7 @@ void UTableUtil::pushback_ref_property(lua_State*inL, int32 LuaStackIndex, UProp
 	if (UStructProperty* p = Cast<UStructProperty>(property))
 	{
 		void* DestPtr = tovoid(inL, LuaStackIndex);
+		ptr = (void*)p->ContainerPtrToValuePtr<uint8>(ptr);
 		p->CopyCompleteValueFromScriptVM(DestPtr, ptr);
 		lua_pushvalue(inL, LuaStackIndex);
 	}
