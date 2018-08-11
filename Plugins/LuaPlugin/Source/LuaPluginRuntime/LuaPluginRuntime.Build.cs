@@ -16,7 +16,7 @@ public class LuaPluginRuntime : ModuleRules
         PrivateIncludePaths.Add("LuaPluginRuntime/Private");
             
         PublicDependencyModuleNames.AddRange(new string[] {  "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "AIModule", "RHI", "RenderCore", "Foliage", "GameplayTasks" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG", "AssetRegistry" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG", "AssetRegistry", "NavigationSystem" });
 
         PublicIncludePathModuleNames.AddRange(new string[] { "CatchMe" });
 

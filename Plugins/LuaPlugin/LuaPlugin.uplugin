@@ -13,16 +13,12 @@
 	"EnabledByDefault" : true,
 	"CanContainContent" : false,
 	"IsBetaVersion" : false,
-	"Installed" : true,
-	"CanBeUsedWithUnrealHeaderTool" : true,
+	"Installed" : false,
+	"CanBeUsedWithUnrealHeaderTool" : false,
 	
 	"Modules" :
 	[
-    {
-      "Name": "LuaglueGenerator",
-      "Type": "Program",
-      "LoadingPhase": "PostConfigInit"
-    },
+    
     {
 		"Name" : "LuaPluginRuntime",
 		"Type" : "Runtime",

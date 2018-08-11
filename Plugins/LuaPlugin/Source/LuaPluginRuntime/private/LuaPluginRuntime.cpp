@@ -2,7 +2,8 @@
 #include "TableUtil.h"
 #include "CoreMinimal.h"
 #include "ILuaPluginRuntime.h"
-
+#include "Animation/AnimationAsset.h"
+const TArray<FName> FMarkerTickContext::DefaultMarkerNames;
 
 class FLuaPluginRuntime : public ILuaPluginRuntime
 {

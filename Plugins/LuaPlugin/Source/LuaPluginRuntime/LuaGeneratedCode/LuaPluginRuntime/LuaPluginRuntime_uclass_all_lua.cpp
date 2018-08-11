@@ -2,6 +2,7 @@
 #include "BPAndLuaBridge.lua.h"
 #include "LuaArrayHelper.lua.h"
 #include "LuaDelegate.lua.h"
+#include "LuaDelegateSingle.lua.h"
 #include "LuaMapHelper.lua.h"
 #include "LuaScript.lua.h"
 #include "LuaSetHelper.lua.h"
@@ -15,6 +16,7 @@ struct lua_static_load_LuaPluginRuntime_uclass_all_struct
 		UTableUtil::loadlib(BPAndLuaBridge_Lib, "UBPAndLuaBridge");
 		UTableUtil::loadlib(LuaArrayHelper_Lib, "ULuaArrayHelper");
 		UTableUtil::loadlib(LuaDelegate_Lib, "ULuaDelegate");
+		UTableUtil::loadlib(LuaDelegateSingle_Lib, "ULuaDelegateSingle");
 		UTableUtil::loadlib(LuaMapHelper_Lib, "ULuaMapHelper");
 		UTableUtil::loadlib(LuaScript_Lib, "ULuaScript");
 		UTableUtil::loadlib(LuaSetHelper_Lib, "ULuaSetHelper");

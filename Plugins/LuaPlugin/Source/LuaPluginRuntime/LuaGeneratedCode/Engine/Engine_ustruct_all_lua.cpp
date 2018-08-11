@@ -5,12 +5,6 @@
 #include "ActorComponentTickFunction.lua.h"
 #include "URL.lua.h"
 #include "ExposureSettings.lua.h"
-#include "NavigationFilterArea.lua.h"
-#include "NavigationFilterFlags.lua.h"
-#include "NavAgentSelector.lua.h"
-#include "MovementProperties.lua.h"
-#include "NavAgentProperties.lua.h"
-#include "NavDataConfig.lua.h"
 #include "FastArraySerializerItem.lua.h"
 #include "FastArraySerializer.lua.h"
 #include "Vector_NetQuantize.lua.h"
@@ -62,6 +56,7 @@
 #include "FontRenderInfo.lua.h"
 #include "CanvasUVTri.lua.h"
 #include "UserActivity.lua.h"
+#include "NavAvoidanceData.lua.h"
 #include "EdGraphTerminalType.lua.h"
 #include "SimpleMemberReference.lua.h"
 #include "EdGraphPinType.lua.h"
@@ -70,28 +65,27 @@
 #include "StreamableTextureInstance.lua.h"
 #include "DynamicTextureInstance.lua.h"
 #include "LevelSimplificationDetails.lua.h"
-#include "SupportedAreaData.lua.h"
-#include "NavAvoidanceData.lua.h"
-#include "NavCollisionCylinder.lua.h"
-#include "NavCollisionBox.lua.h"
+#include "ReplicatedStaticActorDestructionInfo.lua.h"
+#include "NavAgentSelector.lua.h"
+#include "MovementProperties.lua.h"
+#include "NavAgentProperties.lua.h"
+#include "NavDataConfig.lua.h"
 #include "NavAvoidanceMask.lua.h"
-#include "NavGraphEdge.lua.h"
-#include "CollisionResponse.lua.h"
-#include "BodyInstance.lua.h"
-#include "StreamingTexturePrimitiveInfo.lua.h"
-#include "StreamingTextureBuildInfo.lua.h"
-#include "SpriteCategoryInfo.lua.h"
 #include "NavigationLinkBase.lua.h"
 #include "NavigationLink.lua.h"
 #include "NavigationSegmentLink.lua.h"
-#include "GeomSelection.lua.h"
-#include "MaterialParameterInfo.lua.h"
-#include "MaterialLayersFunctions.lua.h"
-#include "StaticSwitchParameter.lua.h"
-#include "StaticComponentMaskParameter.lua.h"
-#include "StaticTerrainLayerWeightParameter.lua.h"
-#include "StaticMaterialLayersParameter.lua.h"
-#include "StaticParameterSet.lua.h"
+#include "CompilerNativizationOptions.lua.h"
+#include "BlueprintMacroCosmeticInfo.lua.h"
+#include "BPVariableMetaDataEntry.lua.h"
+#include "BPVariableDescription.lua.h"
+#include "BPInterfaceDescription.lua.h"
+#include "EditedDocumentInfo.lua.h"
+#include "BPEditorBookmarkNode.lua.h"
+#include "LatentActionInfo.lua.h"
+#include "LatentActionManager.lua.h"
+#include "PSCPoolElem.lua.h"
+#include "LevelViewportInfo.lua.h"
+#include "LevelCollection.lua.h"
 #include "AnimLinkableElement.lua.h"
 #include "PerBoneBlendWeight.lua.h"
 #include "PerBoneBlendWeights.lua.h"
@@ -108,9 +102,14 @@
 #include "SkeletalMeshSamplingBuiltData.lua.h"
 #include "SkeletalMeshSamplingRegion.lua.h"
 #include "SkeletalMeshSamplingInfo.lua.h"
+#include "PerPlatformInt.lua.h"
+#include "PerPlatformFloat.lua.h"
+#include "SkeletalMeshOptimizationSettings.lua.h"
+#include "BoneFilter.lua.h"
+#include "SkeletalMeshLODGroupSettings.lua.h"
+#include "NodeItem.lua.h"
 #include "BoneMirrorInfo.lua.h"
 #include "BoneMirrorExport.lua.h"
-#include "SkeletalMeshOptimizationSettings.lua.h"
 #include "SkeletalMeshClothBuildParams.lua.h"
 #include "SkeletalMeshLODInfo.lua.h"
 #include "ClothPhysicsProperties_Legacy.lua.h"
@@ -130,6 +129,7 @@
 #include "GridBlendSample.lua.h"
 #include "PerBoneInterpolation.lua.h"
 #include "KeyHandleMap.lua.h"
+#include "KeyHandleLookupTable.lua.h"
 #include "IndexedCurve.lua.h"
 #include "RichCurveKey.lua.h"
 #include "RichCurve.lua.h"
@@ -170,12 +170,6 @@
 #include "NamedTransform.lua.h"
 #include "LocalSpacePose.lua.h"
 #include "ComponentSpacePose.lua.h"
-#include "CompilerNativizationOptions.lua.h"
-#include "BlueprintMacroCosmeticInfo.lua.h"
-#include "BPVariableMetaDataEntry.lua.h"
-#include "BPVariableDescription.lua.h"
-#include "BPInterfaceDescription.lua.h"
-#include "EditedDocumentInfo.lua.h"
 #include "AnimGroupInfo.lua.h"
 #include "AnimParentNodeAssetOverride.lua.h"
 #include "NodeToCodeAssociation.lua.h"
@@ -208,12 +202,37 @@
 #include "SlotAnimationTrack.lua.h"
 #include "BranchingPoint.lua.h"
 #include "BranchingPointMarker.lua.h"
+#include "StreamingTexturePrimitiveInfo.lua.h"
+#include "StreamingTextureBuildInfo.lua.h"
+#include "CollisionResponse.lua.h"
+#include "BodyInstance.lua.h"
+#include "SpriteCategoryInfo.lua.h"
+#include "MaterialParameterInfo.lua.h"
+#include "MaterialLayersFunctions.lua.h"
 #include "LightmassMaterialInterfaceSettings.lua.h"
 #include "MaterialTextureInfo.lua.h"
 #include "SkelMeshSkinWeightInfo.lua.h"
 #include "SkelMeshComponentLODInfo.lua.h"
 #include "SingleAnimationPlayData.lua.h"
 #include "PoseSnapshot.lua.h"
+#include "ConstraintBaseParams.lua.h"
+#include "LinearConstraint.lua.h"
+#include "ConeConstraint.lua.h"
+#include "TwistConstraint.lua.h"
+#include "ConstraintDrive.lua.h"
+#include "LinearDriveConstraint.lua.h"
+#include "AngularDriveConstraint.lua.h"
+#include "ConstraintProfileProperties.lua.h"
+#include "ConstraintInstance.lua.h"
+#include "PhysicalAnimationData.lua.h"
+#include "KShapeElem.lua.h"
+#include "KConvexElem.lua.h"
+#include "KBoxElem.lua.h"
+#include "KSphereElem.lua.h"
+#include "KSphylElem.lua.h"
+#include "KTaperedCapsuleElem.lua.h"
+#include "KAggregateGeom.lua.h"
+#include "PhysicalAnimationProfile.lua.h"
 #include "BranchingPointNotifyPayload.lua.h"
 #include "A2Pose.lua.h"
 #include "A2CSPose.lua.h"
@@ -225,6 +244,9 @@
 #include "ExposedValueHandler.lua.h"
 #include "AnimNode_Base.lua.h"
 #include "InputScaleBias.lua.h"
+#include "InputRange.lua.h"
+#include "InputScaleBiasClamp.lua.h"
+#include "InputAlphaBoolBlend.lua.h"
 #include "AnimNode_ApplyMeshSpaceAdditive.lua.h"
 #include "AnimNode_AssetPlayerBase.lua.h"
 #include "AnimNode_SaveCachedPose.lua.h"
@@ -277,7 +299,9 @@
 #include "PaintedVertex.lua.h"
 #include "InstancedStaticMeshInstanceData.lua.h"
 #include "InstancedStaticMeshMappingInfo.lua.h"
+#include "ClusterNode_DEPRECATED.lua.h"
 #include "ClusterNode.lua.h"
+#include "CachedKeyToActionInfo.lua.h"
 #include "InterpControlPoint.lua.h"
 #include "BatchedLine.lua.h"
 #include "BatchedPoint.lua.h"
@@ -293,6 +317,13 @@
 #include "TimelineLinearColorTrack.lua.h"
 #include "Timeline.lua.h"
 #include "RuntimeCurveLinearColor.lua.h"
+#include "StaticSwitchParameter.lua.h"
+#include "StaticComponentMaskParameter.lua.h"
+#include "StaticTerrainLayerWeightParameter.lua.h"
+#include "StaticMaterialLayersParameter.lua.h"
+#include "StaticParameterSet.lua.h"
+#include "TextureSource.lua.h"
+#include "TexturePlatformData.lua.h"
 #include "IntegralKey.lua.h"
 #include "IntegralCurve.lua.h"
 #include "NameCurveKey.lua.h"
@@ -310,20 +341,21 @@
 #include "PrimaryAssetTypeInfo.lua.h"
 #include "AssetManagerRedirect.lua.h"
 #include "PrimaryAssetRulesOverride.lua.h"
+#include "GeomSelection.lua.h"
 #include "BuilderPoly.lua.h"
 #include "TextSizingParameters.lua.h"
 #include "WrappedStringElement.lua.h"
 #include "CanvasIcon.lua.h"
-#include "TextureSource.lua.h"
-#include "TexturePlatformData.lua.h"
 #include "UniqueNetIdRepl.lua.h"
 #include "MeshReductionSettings.lua.h"
 #include "MeshProxySettings.lua.h"
 #include "MeshMergingSettings.lua.h"
+#include "MeshInstancingSettings.lua.h"
 #include "ReverbSettings.lua.h"
 #include "LightmassWorldInfoSettings.lua.h"
 #include "NetViewer.lua.h"
 #include "HierarchicalSimplification.lua.h"
+#include "BroadphaseSettings.lua.h"
 #include "PacketSimulationSettings.lua.h"
 #include "PlatformInterfaceData.lua.h"
 #include "PlatformInterfaceDelegateResult.lua.h"
@@ -339,8 +371,6 @@
 #include "TableRowBase.lua.h"
 #include "DataTableRowHandle.lua.h"
 #include "DataTableCategoryHandle.lua.h"
-#include "LatentActionInfo.lua.h"
-#include "LatentActionManager.lua.h"
 #include "PlayerMuteList.lua.h"
 #include "ForceFeedbackChannelDetails.lua.h"
 #include "ActiveForceFeedbackEffect.lua.h"
@@ -349,8 +379,6 @@
 #include "DebugTextInfo.lua.h"
 #include "LevelNameAndTime.lua.h"
 #include "RollbackNetStartupActorInfo.lua.h"
-#include "LevelViewportInfo.lua.h"
-#include "LevelCollection.lua.h"
 #include "FullyLoadedPackagesInfo.lua.h"
 #include "LevelStreamingStatus.lua.h"
 #include "NetDriverDefinition.lua.h"
@@ -366,6 +394,7 @@
 #include "PluginRedirect.lua.h"
 #include "FontImportOptionsData.lua.h"
 #include "FontCharacter.lua.h"
+#include "HLODProxyMesh.lua.h"
 #include "ComponentKey.lua.h"
 #include "ComponentOverrideRecord.lua.h"
 #include "BlueprintInputDelegateBinding.lua.h"
@@ -379,7 +408,6 @@
 #include "MemberReference.lua.h"
 #include "PurchaseInfo.lua.h"
 #include "PreviewMeshCollectionEntry.lua.h"
-#include "SkeletalMeshLODGroupSettings.lua.h"
 #include "StaticMeshOptimizationSettings.lua.h"
 #include "StaticMeshSourceModel.lua.h"
 #include "MeshSectionInfo.lua.h"
@@ -435,6 +463,7 @@
 #include "ParameterGroupData.lua.h"
 #include "CustomInput.lua.h"
 #include "MaterialInstanceBasePropertyOverrides.lua.h"
+#include "ScalarParameterAtlasInstanceData.lua.h"
 #include "ScalarParameterValue.lua.h"
 #include "VectorParameterValue.lua.h"
 #include "TextureParameterValue.lua.h"
@@ -476,23 +505,6 @@
 #include "GPUSpriteLocalVectorFieldInfo.lua.h"
 #include "GPUSpriteResourceData.lua.h"
 #include "TireFrictionScalePair.lua.h"
-#include "KShapeElem.lua.h"
-#include "KConvexElem.lua.h"
-#include "KBoxElem.lua.h"
-#include "KSphereElem.lua.h"
-#include "KSphylElem.lua.h"
-#include "KAggregateGeom.lua.h"
-#include "ConstraintDrive.lua.h"
-#include "LinearDriveConstraint.lua.h"
-#include "AngularDriveConstraint.lua.h"
-#include "ConstraintBaseParams.lua.h"
-#include "LinearConstraint.lua.h"
-#include "ConeConstraint.lua.h"
-#include "TwistConstraint.lua.h"
-#include "ConstraintProfileProperties.lua.h"
-#include "ConstraintInstance.lua.h"
-#include "PhysicalAnimationData.lua.h"
-#include "PhysicalAnimationProfile.lua.h"
 #include "PhysicsConstraintProfileHandle.lua.h"
 #include "PhysicalSurfaceName.lua.h"
 #include "AudioQualitySettings.lua.h"
@@ -531,7 +543,6 @@
 #include "CachedAnimAssetPlayerData.lua.h"
 #include "CachedAnimRelevancyData.lua.h"
 #include "CachedAnimTransitionData.lua.h"
-#include "NodeMap.lua.h"
 #include "VoiceSettings.lua.h"
 struct lua_static_load_Engine_ustruct_all_struct
 {
@@ -543,12 +554,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FActorComponentTickFunction_Lib, "FActorComponentTickFunction");
 		UTableUtil::loadstruct(FURL_Lib, "FURL");
 		UTableUtil::loadstruct(FExposureSettings_Lib, "FExposureSettings");
-		UTableUtil::loadstruct(FNavigationFilterArea_Lib, "FNavigationFilterArea");
-		UTableUtil::loadstruct(FNavigationFilterFlags_Lib, "FNavigationFilterFlags");
-		UTableUtil::loadstruct(FNavAgentSelector_Lib, "FNavAgentSelector");
-		UTableUtil::loadstruct(FMovementProperties_Lib, "FMovementProperties");
-		UTableUtil::loadstruct(FNavAgentProperties_Lib, "FNavAgentProperties");
-		UTableUtil::loadstruct(FNavDataConfig_Lib, "FNavDataConfig");
 		UTableUtil::loadstruct(FFastArraySerializerItem_Lib, "FFastArraySerializerItem");
 		UTableUtil::loadstruct(FFastArraySerializer_Lib, "FFastArraySerializer");
 		UTableUtil::loadstruct(FVector_NetQuantize_Lib, "FVector_NetQuantize");
@@ -600,6 +605,7 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FFontRenderInfo_Lib, "FFontRenderInfo");
 		UTableUtil::loadstruct(FCanvasUVTri_Lib, "FCanvasUVTri");
 		UTableUtil::loadstruct(FUserActivity_Lib, "FUserActivity");
+		UTableUtil::loadstruct(FNavAvoidanceData_Lib, "FNavAvoidanceData");
 		UTableUtil::loadstruct(FEdGraphTerminalType_Lib, "FEdGraphTerminalType");
 		UTableUtil::loadstruct(FSimpleMemberReference_Lib, "FSimpleMemberReference");
 		UTableUtil::loadstruct(FEdGraphPinType_Lib, "FEdGraphPinType");
@@ -608,28 +614,27 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FStreamableTextureInstance_Lib, "FStreamableTextureInstance");
 		UTableUtil::loadstruct(FDynamicTextureInstance_Lib, "FDynamicTextureInstance");
 		UTableUtil::loadstruct(FLevelSimplificationDetails_Lib, "FLevelSimplificationDetails");
-		UTableUtil::loadstruct(FSupportedAreaData_Lib, "FSupportedAreaData");
-		UTableUtil::loadstruct(FNavAvoidanceData_Lib, "FNavAvoidanceData");
-		UTableUtil::loadstruct(FNavCollisionCylinder_Lib, "FNavCollisionCylinder");
-		UTableUtil::loadstruct(FNavCollisionBox_Lib, "FNavCollisionBox");
+		UTableUtil::loadstruct(FReplicatedStaticActorDestructionInfo_Lib, "FReplicatedStaticActorDestructionInfo");
+		UTableUtil::loadstruct(FNavAgentSelector_Lib, "FNavAgentSelector");
+		UTableUtil::loadstruct(FMovementProperties_Lib, "FMovementProperties");
+		UTableUtil::loadstruct(FNavAgentProperties_Lib, "FNavAgentProperties");
+		UTableUtil::loadstruct(FNavDataConfig_Lib, "FNavDataConfig");
 		UTableUtil::loadstruct(FNavAvoidanceMask_Lib, "FNavAvoidanceMask");
-		UTableUtil::loadstruct(FNavGraphEdge_Lib, "FNavGraphEdge");
-		UTableUtil::loadstruct(FCollisionResponse_Lib, "FCollisionResponse");
-		UTableUtil::loadstruct(FBodyInstance_Lib, "FBodyInstance");
-		UTableUtil::loadstruct(FStreamingTexturePrimitiveInfo_Lib, "FStreamingTexturePrimitiveInfo");
-		UTableUtil::loadstruct(FStreamingTextureBuildInfo_Lib, "FStreamingTextureBuildInfo");
-		UTableUtil::loadstruct(FSpriteCategoryInfo_Lib, "FSpriteCategoryInfo");
 		UTableUtil::loadstruct(FNavigationLinkBase_Lib, "FNavigationLinkBase");
 		UTableUtil::loadstruct(FNavigationLink_Lib, "FNavigationLink");
 		UTableUtil::loadstruct(FNavigationSegmentLink_Lib, "FNavigationSegmentLink");
-		UTableUtil::loadstruct(FGeomSelection_Lib, "FGeomSelection");
-		UTableUtil::loadstruct(FMaterialParameterInfo_Lib, "FMaterialParameterInfo");
-		UTableUtil::loadstruct(FMaterialLayersFunctions_Lib, "FMaterialLayersFunctions");
-		UTableUtil::loadstruct(FStaticSwitchParameter_Lib, "FStaticSwitchParameter");
-		UTableUtil::loadstruct(FStaticComponentMaskParameter_Lib, "FStaticComponentMaskParameter");
-		UTableUtil::loadstruct(FStaticTerrainLayerWeightParameter_Lib, "FStaticTerrainLayerWeightParameter");
-		UTableUtil::loadstruct(FStaticMaterialLayersParameter_Lib, "FStaticMaterialLayersParameter");
-		UTableUtil::loadstruct(FStaticParameterSet_Lib, "FStaticParameterSet");
+		UTableUtil::loadstruct(FCompilerNativizationOptions_Lib, "FCompilerNativizationOptions");
+		UTableUtil::loadstruct(FBlueprintMacroCosmeticInfo_Lib, "FBlueprintMacroCosmeticInfo");
+		UTableUtil::loadstruct(FBPVariableMetaDataEntry_Lib, "FBPVariableMetaDataEntry");
+		UTableUtil::loadstruct(FBPVariableDescription_Lib, "FBPVariableDescription");
+		UTableUtil::loadstruct(FBPInterfaceDescription_Lib, "FBPInterfaceDescription");
+		UTableUtil::loadstruct(FEditedDocumentInfo_Lib, "FEditedDocumentInfo");
+		UTableUtil::loadstruct(FBPEditorBookmarkNode_Lib, "FBPEditorBookmarkNode");
+		UTableUtil::loadstruct(FLatentActionInfo_Lib, "FLatentActionInfo");
+		UTableUtil::loadstruct(FLatentActionManager_Lib, "FLatentActionManager");
+		UTableUtil::loadstruct(FPSCPoolElem_Lib, "FPSCPoolElem");
+		UTableUtil::loadstruct(FLevelViewportInfo_Lib, "FLevelViewportInfo");
+		UTableUtil::loadstruct(FLevelCollection_Lib, "FLevelCollection");
 		UTableUtil::loadstruct(FAnimLinkableElement_Lib, "FAnimLinkableElement");
 		UTableUtil::loadstruct(FPerBoneBlendWeight_Lib, "FPerBoneBlendWeight");
 		UTableUtil::loadstruct(FPerBoneBlendWeights_Lib, "FPerBoneBlendWeights");
@@ -646,9 +651,14 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FSkeletalMeshSamplingBuiltData_Lib, "FSkeletalMeshSamplingBuiltData");
 		UTableUtil::loadstruct(FSkeletalMeshSamplingRegion_Lib, "FSkeletalMeshSamplingRegion");
 		UTableUtil::loadstruct(FSkeletalMeshSamplingInfo_Lib, "FSkeletalMeshSamplingInfo");
+		UTableUtil::loadstruct(FPerPlatformInt_Lib, "FPerPlatformInt");
+		UTableUtil::loadstruct(FPerPlatformFloat_Lib, "FPerPlatformFloat");
+		UTableUtil::loadstruct(FSkeletalMeshOptimizationSettings_Lib, "FSkeletalMeshOptimizationSettings");
+		UTableUtil::loadstruct(FBoneFilter_Lib, "FBoneFilter");
+		UTableUtil::loadstruct(FSkeletalMeshLODGroupSettings_Lib, "FSkeletalMeshLODGroupSettings");
+		UTableUtil::loadstruct(FNodeItem_Lib, "FNodeItem");
 		UTableUtil::loadstruct(FBoneMirrorInfo_Lib, "FBoneMirrorInfo");
 		UTableUtil::loadstruct(FBoneMirrorExport_Lib, "FBoneMirrorExport");
-		UTableUtil::loadstruct(FSkeletalMeshOptimizationSettings_Lib, "FSkeletalMeshOptimizationSettings");
 		UTableUtil::loadstruct(FSkeletalMeshClothBuildParams_Lib, "FSkeletalMeshClothBuildParams");
 		UTableUtil::loadstruct(FSkeletalMeshLODInfo_Lib, "FSkeletalMeshLODInfo");
 		UTableUtil::loadstruct(FClothPhysicsProperties_Legacy_Lib, "FClothPhysicsProperties_Legacy");
@@ -668,6 +678,7 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FGridBlendSample_Lib, "FGridBlendSample");
 		UTableUtil::loadstruct(FPerBoneInterpolation_Lib, "FPerBoneInterpolation");
 		UTableUtil::loadstruct(FKeyHandleMap_Lib, "FKeyHandleMap");
+		UTableUtil::loadstruct(FKeyHandleLookupTable_Lib, "FKeyHandleLookupTable");
 		UTableUtil::loadstruct(FIndexedCurve_Lib, "FIndexedCurve");
 		UTableUtil::loadstruct(FRichCurveKey_Lib, "FRichCurveKey");
 		UTableUtil::loadstruct(FRichCurve_Lib, "FRichCurve");
@@ -708,12 +719,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FNamedTransform_Lib, "FNamedTransform");
 		UTableUtil::loadstruct(FLocalSpacePose_Lib, "FLocalSpacePose");
 		UTableUtil::loadstruct(FComponentSpacePose_Lib, "FComponentSpacePose");
-		UTableUtil::loadstruct(FCompilerNativizationOptions_Lib, "FCompilerNativizationOptions");
-		UTableUtil::loadstruct(FBlueprintMacroCosmeticInfo_Lib, "FBlueprintMacroCosmeticInfo");
-		UTableUtil::loadstruct(FBPVariableMetaDataEntry_Lib, "FBPVariableMetaDataEntry");
-		UTableUtil::loadstruct(FBPVariableDescription_Lib, "FBPVariableDescription");
-		UTableUtil::loadstruct(FBPInterfaceDescription_Lib, "FBPInterfaceDescription");
-		UTableUtil::loadstruct(FEditedDocumentInfo_Lib, "FEditedDocumentInfo");
 		UTableUtil::loadstruct(FAnimGroupInfo_Lib, "FAnimGroupInfo");
 		UTableUtil::loadstruct(FAnimParentNodeAssetOverride_Lib, "FAnimParentNodeAssetOverride");
 		UTableUtil::loadstruct(FNodeToCodeAssociation_Lib, "FNodeToCodeAssociation");
@@ -746,12 +751,37 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FSlotAnimationTrack_Lib, "FSlotAnimationTrack");
 		UTableUtil::loadstruct(FBranchingPoint_Lib, "FBranchingPoint");
 		UTableUtil::loadstruct(FBranchingPointMarker_Lib, "FBranchingPointMarker");
+		UTableUtil::loadstruct(FStreamingTexturePrimitiveInfo_Lib, "FStreamingTexturePrimitiveInfo");
+		UTableUtil::loadstruct(FStreamingTextureBuildInfo_Lib, "FStreamingTextureBuildInfo");
+		UTableUtil::loadstruct(FCollisionResponse_Lib, "FCollisionResponse");
+		UTableUtil::loadstruct(FBodyInstance_Lib, "FBodyInstance");
+		UTableUtil::loadstruct(FSpriteCategoryInfo_Lib, "FSpriteCategoryInfo");
+		UTableUtil::loadstruct(FMaterialParameterInfo_Lib, "FMaterialParameterInfo");
+		UTableUtil::loadstruct(FMaterialLayersFunctions_Lib, "FMaterialLayersFunctions");
 		UTableUtil::loadstruct(FLightmassMaterialInterfaceSettings_Lib, "FLightmassMaterialInterfaceSettings");
 		UTableUtil::loadstruct(FMaterialTextureInfo_Lib, "FMaterialTextureInfo");
 		UTableUtil::loadstruct(FSkelMeshSkinWeightInfo_Lib, "FSkelMeshSkinWeightInfo");
 		UTableUtil::loadstruct(FSkelMeshComponentLODInfo_Lib, "FSkelMeshComponentLODInfo");
 		UTableUtil::loadstruct(FSingleAnimationPlayData_Lib, "FSingleAnimationPlayData");
 		UTableUtil::loadstruct(FPoseSnapshot_Lib, "FPoseSnapshot");
+		UTableUtil::loadstruct(FConstraintBaseParams_Lib, "FConstraintBaseParams");
+		UTableUtil::loadstruct(FLinearConstraint_Lib, "FLinearConstraint");
+		UTableUtil::loadstruct(FConeConstraint_Lib, "FConeConstraint");
+		UTableUtil::loadstruct(FTwistConstraint_Lib, "FTwistConstraint");
+		UTableUtil::loadstruct(FConstraintDrive_Lib, "FConstraintDrive");
+		UTableUtil::loadstruct(FLinearDriveConstraint_Lib, "FLinearDriveConstraint");
+		UTableUtil::loadstruct(FAngularDriveConstraint_Lib, "FAngularDriveConstraint");
+		UTableUtil::loadstruct(FConstraintProfileProperties_Lib, "FConstraintProfileProperties");
+		UTableUtil::loadstruct(FConstraintInstance_Lib, "FConstraintInstance");
+		UTableUtil::loadstruct(FPhysicalAnimationData_Lib, "FPhysicalAnimationData");
+		UTableUtil::loadstruct(FKShapeElem_Lib, "FKShapeElem");
+		UTableUtil::loadstruct(FKConvexElem_Lib, "FKConvexElem");
+		UTableUtil::loadstruct(FKBoxElem_Lib, "FKBoxElem");
+		UTableUtil::loadstruct(FKSphereElem_Lib, "FKSphereElem");
+		UTableUtil::loadstruct(FKSphylElem_Lib, "FKSphylElem");
+		UTableUtil::loadstruct(FKTaperedCapsuleElem_Lib, "FKTaperedCapsuleElem");
+		UTableUtil::loadstruct(FKAggregateGeom_Lib, "FKAggregateGeom");
+		UTableUtil::loadstruct(FPhysicalAnimationProfile_Lib, "FPhysicalAnimationProfile");
 		UTableUtil::loadstruct(FBranchingPointNotifyPayload_Lib, "FBranchingPointNotifyPayload");
 		UTableUtil::loadstruct(FA2Pose_Lib, "FA2Pose");
 		UTableUtil::loadstruct(FA2CSPose_Lib, "FA2CSPose");
@@ -763,6 +793,9 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FExposedValueHandler_Lib, "FExposedValueHandler");
 		UTableUtil::loadstruct(FAnimNode_Base_Lib, "FAnimNode_Base");
 		UTableUtil::loadstruct(FInputScaleBias_Lib, "FInputScaleBias");
+		UTableUtil::loadstruct(FInputRange_Lib, "FInputRange");
+		UTableUtil::loadstruct(FInputScaleBiasClamp_Lib, "FInputScaleBiasClamp");
+		UTableUtil::loadstruct(FInputAlphaBoolBlend_Lib, "FInputAlphaBoolBlend");
 		UTableUtil::loadstruct(FAnimNode_ApplyMeshSpaceAdditive_Lib, "FAnimNode_ApplyMeshSpaceAdditive");
 		UTableUtil::loadstruct(FAnimNode_AssetPlayerBase_Lib, "FAnimNode_AssetPlayerBase");
 		UTableUtil::loadstruct(FAnimNode_SaveCachedPose_Lib, "FAnimNode_SaveCachedPose");
@@ -815,7 +848,9 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FPaintedVertex_Lib, "FPaintedVertex");
 		UTableUtil::loadstruct(FInstancedStaticMeshInstanceData_Lib, "FInstancedStaticMeshInstanceData");
 		UTableUtil::loadstruct(FInstancedStaticMeshMappingInfo_Lib, "FInstancedStaticMeshMappingInfo");
+		UTableUtil::loadstruct(FClusterNode_DEPRECATED_Lib, "FClusterNode_DEPRECATED");
 		UTableUtil::loadstruct(FClusterNode_Lib, "FClusterNode");
+		UTableUtil::loadstruct(FCachedKeyToActionInfo_Lib, "FCachedKeyToActionInfo");
 		UTableUtil::loadstruct(FInterpControlPoint_Lib, "FInterpControlPoint");
 		UTableUtil::loadstruct(FBatchedLine_Lib, "FBatchedLine");
 		UTableUtil::loadstruct(FBatchedPoint_Lib, "FBatchedPoint");
@@ -831,6 +866,13 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FTimelineLinearColorTrack_Lib, "FTimelineLinearColorTrack");
 		UTableUtil::loadstruct(FTimeline_Lib, "FTimeline");
 		UTableUtil::loadstruct(FRuntimeCurveLinearColor_Lib, "FRuntimeCurveLinearColor");
+		UTableUtil::loadstruct(FStaticSwitchParameter_Lib, "FStaticSwitchParameter");
+		UTableUtil::loadstruct(FStaticComponentMaskParameter_Lib, "FStaticComponentMaskParameter");
+		UTableUtil::loadstruct(FStaticTerrainLayerWeightParameter_Lib, "FStaticTerrainLayerWeightParameter");
+		UTableUtil::loadstruct(FStaticMaterialLayersParameter_Lib, "FStaticMaterialLayersParameter");
+		UTableUtil::loadstruct(FStaticParameterSet_Lib, "FStaticParameterSet");
+		UTableUtil::loadstruct(FTextureSource_Lib, "FTextureSource");
+		UTableUtil::loadstruct(FTexturePlatformData_Lib, "FTexturePlatformData");
 		UTableUtil::loadstruct(FIntegralKey_Lib, "FIntegralKey");
 		UTableUtil::loadstruct(FIntegralCurve_Lib, "FIntegralCurve");
 		UTableUtil::loadstruct(FNameCurveKey_Lib, "FNameCurveKey");
@@ -848,20 +890,21 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FPrimaryAssetTypeInfo_Lib, "FPrimaryAssetTypeInfo");
 		UTableUtil::loadstruct(FAssetManagerRedirect_Lib, "FAssetManagerRedirect");
 		UTableUtil::loadstruct(FPrimaryAssetRulesOverride_Lib, "FPrimaryAssetRulesOverride");
+		UTableUtil::loadstruct(FGeomSelection_Lib, "FGeomSelection");
 		UTableUtil::loadstruct(FBuilderPoly_Lib, "FBuilderPoly");
 		UTableUtil::loadstruct(FTextSizingParameters_Lib, "FTextSizingParameters");
 		UTableUtil::loadstruct(FWrappedStringElement_Lib, "FWrappedStringElement");
 		UTableUtil::loadstruct(FCanvasIcon_Lib, "FCanvasIcon");
-		UTableUtil::loadstruct(FTextureSource_Lib, "FTextureSource");
-		UTableUtil::loadstruct(FTexturePlatformData_Lib, "FTexturePlatformData");
 		UTableUtil::loadstruct(FUniqueNetIdRepl_Lib, "FUniqueNetIdRepl");
 		UTableUtil::loadstruct(FMeshReductionSettings_Lib, "FMeshReductionSettings");
 		UTableUtil::loadstruct(FMeshProxySettings_Lib, "FMeshProxySettings");
 		UTableUtil::loadstruct(FMeshMergingSettings_Lib, "FMeshMergingSettings");
+		UTableUtil::loadstruct(FMeshInstancingSettings_Lib, "FMeshInstancingSettings");
 		UTableUtil::loadstruct(FReverbSettings_Lib, "FReverbSettings");
 		UTableUtil::loadstruct(FLightmassWorldInfoSettings_Lib, "FLightmassWorldInfoSettings");
 		UTableUtil::loadstruct(FNetViewer_Lib, "FNetViewer");
 		UTableUtil::loadstruct(FHierarchicalSimplification_Lib, "FHierarchicalSimplification");
+		UTableUtil::loadstruct(FBroadphaseSettings_Lib, "FBroadphaseSettings");
 		UTableUtil::loadstruct(FPacketSimulationSettings_Lib, "FPacketSimulationSettings");
 		UTableUtil::loadstruct(FPlatformInterfaceData_Lib, "FPlatformInterfaceData");
 		UTableUtil::loadstruct(FPlatformInterfaceDelegateResult_Lib, "FPlatformInterfaceDelegateResult");
@@ -877,8 +920,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FTableRowBase_Lib, "FTableRowBase");
 		UTableUtil::loadstruct(FDataTableRowHandle_Lib, "FDataTableRowHandle");
 		UTableUtil::loadstruct(FDataTableCategoryHandle_Lib, "FDataTableCategoryHandle");
-		UTableUtil::loadstruct(FLatentActionInfo_Lib, "FLatentActionInfo");
-		UTableUtil::loadstruct(FLatentActionManager_Lib, "FLatentActionManager");
 		UTableUtil::loadstruct(FPlayerMuteList_Lib, "FPlayerMuteList");
 		UTableUtil::loadstruct(FForceFeedbackChannelDetails_Lib, "FForceFeedbackChannelDetails");
 		UTableUtil::loadstruct(FActiveForceFeedbackEffect_Lib, "FActiveForceFeedbackEffect");
@@ -887,8 +928,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FDebugTextInfo_Lib, "FDebugTextInfo");
 		UTableUtil::loadstruct(FLevelNameAndTime_Lib, "FLevelNameAndTime");
 		UTableUtil::loadstruct(FRollbackNetStartupActorInfo_Lib, "FRollbackNetStartupActorInfo");
-		UTableUtil::loadstruct(FLevelViewportInfo_Lib, "FLevelViewportInfo");
-		UTableUtil::loadstruct(FLevelCollection_Lib, "FLevelCollection");
 		UTableUtil::loadstruct(FFullyLoadedPackagesInfo_Lib, "FFullyLoadedPackagesInfo");
 		UTableUtil::loadstruct(FLevelStreamingStatus_Lib, "FLevelStreamingStatus");
 		UTableUtil::loadstruct(FNetDriverDefinition_Lib, "FNetDriverDefinition");
@@ -904,6 +943,7 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FPluginRedirect_Lib, "FPluginRedirect");
 		UTableUtil::loadstruct(FFontImportOptionsData_Lib, "FFontImportOptionsData");
 		UTableUtil::loadstruct(FFontCharacter_Lib, "FFontCharacter");
+		UTableUtil::loadstruct(FHLODProxyMesh_Lib, "FHLODProxyMesh");
 		UTableUtil::loadstruct(FComponentKey_Lib, "FComponentKey");
 		UTableUtil::loadstruct(FComponentOverrideRecord_Lib, "FComponentOverrideRecord");
 		UTableUtil::loadstruct(FBlueprintInputDelegateBinding_Lib, "FBlueprintInputDelegateBinding");
@@ -917,7 +957,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FMemberReference_Lib, "FMemberReference");
 		UTableUtil::loadstruct(FPurchaseInfo_Lib, "FPurchaseInfo");
 		UTableUtil::loadstruct(FPreviewMeshCollectionEntry_Lib, "FPreviewMeshCollectionEntry");
-		UTableUtil::loadstruct(FSkeletalMeshLODGroupSettings_Lib, "FSkeletalMeshLODGroupSettings");
 		UTableUtil::loadstruct(FStaticMeshOptimizationSettings_Lib, "FStaticMeshOptimizationSettings");
 		UTableUtil::loadstruct(FStaticMeshSourceModel_Lib, "FStaticMeshSourceModel");
 		UTableUtil::loadstruct(FMeshSectionInfo_Lib, "FMeshSectionInfo");
@@ -973,6 +1012,7 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FParameterGroupData_Lib, "FParameterGroupData");
 		UTableUtil::loadstruct(FCustomInput_Lib, "FCustomInput");
 		UTableUtil::loadstruct(FMaterialInstanceBasePropertyOverrides_Lib, "FMaterialInstanceBasePropertyOverrides");
+		UTableUtil::loadstruct(FScalarParameterAtlasInstanceData_Lib, "FScalarParameterAtlasInstanceData");
 		UTableUtil::loadstruct(FScalarParameterValue_Lib, "FScalarParameterValue");
 		UTableUtil::loadstruct(FVectorParameterValue_Lib, "FVectorParameterValue");
 		UTableUtil::loadstruct(FTextureParameterValue_Lib, "FTextureParameterValue");
@@ -1014,23 +1054,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FGPUSpriteLocalVectorFieldInfo_Lib, "FGPUSpriteLocalVectorFieldInfo");
 		UTableUtil::loadstruct(FGPUSpriteResourceData_Lib, "FGPUSpriteResourceData");
 		UTableUtil::loadstruct(FTireFrictionScalePair_Lib, "FTireFrictionScalePair");
-		UTableUtil::loadstruct(FKShapeElem_Lib, "FKShapeElem");
-		UTableUtil::loadstruct(FKConvexElem_Lib, "FKConvexElem");
-		UTableUtil::loadstruct(FKBoxElem_Lib, "FKBoxElem");
-		UTableUtil::loadstruct(FKSphereElem_Lib, "FKSphereElem");
-		UTableUtil::loadstruct(FKSphylElem_Lib, "FKSphylElem");
-		UTableUtil::loadstruct(FKAggregateGeom_Lib, "FKAggregateGeom");
-		UTableUtil::loadstruct(FConstraintDrive_Lib, "FConstraintDrive");
-		UTableUtil::loadstruct(FLinearDriveConstraint_Lib, "FLinearDriveConstraint");
-		UTableUtil::loadstruct(FAngularDriveConstraint_Lib, "FAngularDriveConstraint");
-		UTableUtil::loadstruct(FConstraintBaseParams_Lib, "FConstraintBaseParams");
-		UTableUtil::loadstruct(FLinearConstraint_Lib, "FLinearConstraint");
-		UTableUtil::loadstruct(FConeConstraint_Lib, "FConeConstraint");
-		UTableUtil::loadstruct(FTwistConstraint_Lib, "FTwistConstraint");
-		UTableUtil::loadstruct(FConstraintProfileProperties_Lib, "FConstraintProfileProperties");
-		UTableUtil::loadstruct(FConstraintInstance_Lib, "FConstraintInstance");
-		UTableUtil::loadstruct(FPhysicalAnimationData_Lib, "FPhysicalAnimationData");
-		UTableUtil::loadstruct(FPhysicalAnimationProfile_Lib, "FPhysicalAnimationProfile");
 		UTableUtil::loadstruct(FPhysicsConstraintProfileHandle_Lib, "FPhysicsConstraintProfileHandle");
 		UTableUtil::loadstruct(FPhysicalSurfaceName_Lib, "FPhysicalSurfaceName");
 		UTableUtil::loadstruct(FAudioQualitySettings_Lib, "FAudioQualitySettings");
@@ -1069,7 +1092,6 @@ struct lua_static_load_Engine_ustruct_all_struct
 		UTableUtil::loadstruct(FCachedAnimAssetPlayerData_Lib, "FCachedAnimAssetPlayerData");
 		UTableUtil::loadstruct(FCachedAnimRelevancyData_Lib, "FCachedAnimRelevancyData");
 		UTableUtil::loadstruct(FCachedAnimTransitionData_Lib, "FCachedAnimTransitionData");
-		UTableUtil::loadstruct(FNodeMap_Lib, "FNodeMap");
 		UTableUtil::loadstruct(FVoiceSettings_Lib, "FVoiceSettings");
 	}
 	lua_static_load_Engine_ustruct_all_struct(){UTableUtil::GetInitDelegates().AddStatic(&load);}

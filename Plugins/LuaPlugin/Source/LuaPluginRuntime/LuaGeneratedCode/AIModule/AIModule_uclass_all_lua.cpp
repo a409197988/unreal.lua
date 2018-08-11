@@ -43,8 +43,10 @@
 #include "EQSTestingPawn.lua.h"
 #include "GenericTeamAgentInterface.lua.h"
 #include "NavFilter_AIControllerDefault.lua.h"
+#include "NavLinkProxy.lua.h"
 #include "NavLocalGridManager.lua.h"
 #include "PathFollowingComponent.lua.h"
+#include "PathFollowingManager.lua.h"
 #include "PawnAction.lua.h"
 #include "PawnActionsComponent.lua.h"
 #include "PawnSensingComponent.lua.h"
@@ -95,7 +97,6 @@
 #include "BTDecorator_CompareBBEntries.lua.h"
 #include "BTDecorator_ConeCheck.lua.h"
 #include "BTDecorator_Cooldown.lua.h"
-#include "BTDecorator_DoesPathExist.lua.h"
 #include "BTDecorator_ForceSuccess.lua.h"
 #include "BTDecorator_KeepInCone.lua.h"
 #include "BTDecorator_Loop.lua.h"
@@ -215,8 +216,10 @@ struct lua_static_load_AIModule_uclass_all_struct
 		UTableUtil::loadlib(EQSTestingPawn_Lib, "AEQSTestingPawn");
 		UTableUtil::loadlib(GenericTeamAgentInterface_Lib, "IGenericTeamAgentInterface");
 		UTableUtil::loadlib(NavFilter_AIControllerDefault_Lib, "UNavFilter_AIControllerDefault");
+		UTableUtil::loadlib(NavLinkProxy_Lib, "ANavLinkProxy");
 		UTableUtil::loadlib(NavLocalGridManager_Lib, "UNavLocalGridManager");
 		UTableUtil::loadlib(PathFollowingComponent_Lib, "UPathFollowingComponent");
+		UTableUtil::loadlib(PathFollowingManager_Lib, "UPathFollowingManager");
 		UTableUtil::loadlib(PawnAction_Lib, "UPawnAction");
 		UTableUtil::loadlib(PawnActionsComponent_Lib, "UPawnActionsComponent");
 		UTableUtil::loadlib(PawnSensingComponent_Lib, "UPawnSensingComponent");
@@ -267,7 +270,6 @@ struct lua_static_load_AIModule_uclass_all_struct
 		UTableUtil::loadlib(BTDecorator_CompareBBEntries_Lib, "UBTDecorator_CompareBBEntries");
 		UTableUtil::loadlib(BTDecorator_ConeCheck_Lib, "UBTDecorator_ConeCheck");
 		UTableUtil::loadlib(BTDecorator_Cooldown_Lib, "UBTDecorator_Cooldown");
-		UTableUtil::loadlib(BTDecorator_DoesPathExist_Lib, "UBTDecorator_DoesPathExist");
 		UTableUtil::loadlib(BTDecorator_ForceSuccess_Lib, "UBTDecorator_ForceSuccess");
 		UTableUtil::loadlib(BTDecorator_KeepInCone_Lib, "UBTDecorator_KeepInCone");
 		UTableUtil::loadlib(BTDecorator_Loop_Lib, "UBTDecorator_Loop");

@@ -10,9 +10,8 @@ public class CatchMe : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "AIModule", "Foliage", "GameplayTasks" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG", "NavigationSystem" });
 
         PublicDependencyModuleNames.Add("LuaPluginRuntime");
     }
-}
-  
+}   
